@@ -10,6 +10,7 @@ import Lounge from "./components/Lounge";
 import LinkPage from "./components/LinkPage";
 import RequireAuth from "./components/RequireAuth";
 import { Routes, Route } from "react-router-dom";
+import Employees from "./components/Employees";
 
 const ROLES = {
 	User: 2001,
@@ -44,6 +45,7 @@ function App() {
 						element={<RequireAuth allowedRoles={[ROLES.Editor, ROLES.Admin]} />}
 					>
 						<Route path="lounge" element={<Lounge />} />
+						<Route path="employees" element={<Employees />} />
 					</Route>
 
 					<Route path="*" element={<Missing />} />

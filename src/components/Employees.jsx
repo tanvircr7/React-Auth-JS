@@ -3,6 +3,7 @@ import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useNavigate, useLocation } from "react-router-dom";
 import AddEmployee from "./AddEmployee";
 import DeleteEmployee from "./DeleteEmployee";
+import EmployeeContent from "./EmployeeContent";
 
 const Employees = () => {
 	const [employees, setEmployees] = useState();
@@ -40,6 +41,31 @@ const Employees = () => {
 		};
 	}, []);
 
+	const refreshEmployeeList = () => {
+		const controller = new AbortController();
+
+		const getEmployees = async () => {
+			try {
+				const response = await axiosPrivate.get("/employees", {
+					signal: controller.signal,
+				});
+				console.log(`${response.data} <- reponse data for try block`);
+				setEmployees(response.data);
+			} catch (err) {
+				console.error(err);
+				console.log("ERROR CAUGHT");
+				// navigate("/login");
+				// // navigate("/login", { state: { from: location }, replace: true });
+			}
+		};
+
+		getEmployees();
+
+		return () => {
+			controller.abort();
+		};
+	};
+
 	const sortEmployees = () => {
 		console.log("WOHO");
 	};
@@ -66,43 +92,50 @@ const Employees = () => {
 				console.log(
 					`${response.data} <- reponse data for ADD EMPLOYEE TRY block`
 				);
-				// isMounted && setEmployees(response.data);
+				// setEmployees(response.data);
 			} catch (err) {
 				console.error(err);
 				console.log("ERROR CAUGHT");
-				// navigate("/login");
-				// // navigate("/login", { state: { from: location }, replace: true });
 			}
 		};
 
 		addEmployee();
+		refreshEmployeeList();
+		setNewFirstname("");
+		setNewLastname("");
+		setNewSalary("");
 
 		return () => {
 			controller.abort();
 		};
 	};
 
-	const handleDelete = () => {
+	const handleDelete = (empId) => {
 		const controller = new AbortController();
+		console.log(empId);
+		const id = empId;
+		// const deleteId = { id: empId };
 
-		const deleteEmployee = async (empId) => {
+		const deleteEmployee = async () => {
+			console.log(id);
 			try {
-				const response = await axiosPrivate.delete("/employees", empId, {
+				console.log(id);
+				const response = await axiosPrivate.delete("/employees", {
+					data: { id }, // why not deleteId?
 					signal: controller.signal,
 				});
 				console.log(
-					`${response.data} <- reponse data for ADD EMPLOYEE TRY block`
+					`${response.data} <- reponse data for DELETE EMPLOYEE TRY block`
 				);
-				// isMounted && setEmployees(response.data);
+				// setEmployees(response.data);
 			} catch (err) {
 				console.error(err);
 				console.log("ERROR CAUGHT");
-				// navigate("/login");
-				// // navigate("/login", { state: { from: location }, replace: true });
 			}
 		};
 
-		deleteEmployee(empId);
+		deleteEmployee();
+		refreshEmployeeList();
 
 		return () => {
 			controller.abort();
@@ -111,12 +144,12 @@ const Employees = () => {
 
 	return (
 		<>
-			<button id="sort-desc" onClick={() => sortEmployees(0)}>
+			{/* <button id="sort-desc" onClick={() => sortEmployees(0)}>
 				Sort Descending
 			</button>
 			<button id="sort-asc" onClick={() => sortEmployees(1)}>
 				Sort Ascending
-			</button>
+			</button> */}
 			<AddEmployee
 				newFirstname={newFirstname}
 				setNewFirstname={setNewFirstname}
@@ -129,19 +162,7 @@ const Employees = () => {
 			<article>
 				<h2>Employees List</h2>
 				{employees?.length ? (
-					<ul>
-						{employees.map((employee, i) => (
-							<li key={i}>
-								{employee?.firstname}
-								{employee?.lastname}--------
-								{employee?.salary}
-								<DeleteEmployee
-									empId={employee?.id}
-									handleDelete={handleDelete}
-								/>
-							</li>
-						))}
-					</ul>
+					<EmployeeContent employees={employees} handleDelete={handleDelete} />
 				) : (
 					<p>No employees to display</p>
 				)}

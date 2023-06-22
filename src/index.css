@@ -113,3 +113,9 @@ button {
 .line {
 	display: inline-block;
 }
+
+#row-item > text {
+	padding: 10px;
+	/* display: flex;
+	flex-direction: column; */
+}

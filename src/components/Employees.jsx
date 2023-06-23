@@ -4,6 +4,56 @@ import { useNavigate, useLocation } from "react-router-dom";
 import AddEmployee from "./AddEmployee";
 import DeleteEmployee from "./DeleteEmployee";
 import EmployeeContent from "./EmployeeContent";
+import { DataGrid } from "@mui/x-data-grid";
+import { FaTrashAlt } from "react-icons/fa";
+
+const renderDetailsButton = (params) => {
+	return (
+		<strong>
+			<button
+				variant="contained"
+				color="red"
+				size="small"
+				style={{ marginLeft: 16 }}
+				onClick={() => {
+					handleDelete(params.row.id);
+				}}
+			>
+				<FaTrashAlt />
+			</button>
+		</strong>
+	);
+};
+
+const columns = [
+	{ field: "id", headerName: "ID", width: 70 },
+	{ field: "firstName", headerName: "Firstname", type: "string", width: 130 },
+	{ field: "lastName", headerName: "Lastname", type: "string", width: 130 },
+	{
+		field: "salary",
+		headerName: "Salary",
+		type: "string",
+		width: 90,
+	},
+	{
+		field: "fullName",
+		headerName: "Full name",
+		description: "This column has a value getter and is not sortable.",
+		sortable: false,
+		width: 160,
+		valueGetter: (params) =>
+			`${params.row.firstName || ""} ${params.row.lastName || ""}`,
+	},
+	{
+		field: "delete",
+		headerName: "Options",
+		width: 150,
+		renderCell: renderDetailsButton,
+		disableClickEventBubbling: true,
+	},
+];
+
+var rows = [];
 
 const Employees = () => {
 	const [employees, setEmployees] = useState();
@@ -51,6 +101,7 @@ const Employees = () => {
 				});
 				console.log(`${response.data} <- reponse data for try block`);
 				setEmployees(response.data);
+				makeRow();
 			} catch (err) {
 				console.error(err);
 				console.log("ERROR CAUGHT");
@@ -93,6 +144,7 @@ const Employees = () => {
 					`${response.data} <- reponse data for ADD EMPLOYEE TRY block`
 				);
 				// setEmployees(response.data);
+				makeRow();
 			} catch (err) {
 				console.error(err);
 				console.log("ERROR CAUGHT");
@@ -128,6 +180,7 @@ const Employees = () => {
 					`${response.data} <- reponse data for DELETE EMPLOYEE TRY block`
 				);
 				// setEmployees(response.data);
+				makeRow();
 			} catch (err) {
 				console.error(err);
 				console.log("ERROR CAUGHT");
@@ -142,14 +195,24 @@ const Employees = () => {
 		};
 	};
 
+	const makeRow = () => {
+		console.log(`how employees look like ->${JSON.stringify(employees)}`);
+		var updatedRows = employees.map((employee) => {
+			console.log(employee._id);
+			return {
+				id: employee._id,
+				firstName: employee.firstname,
+				lastName: employee.lastname,
+				salary: employee.salary,
+			};
+		});
+		console.log(rows);
+		rows = updatedRows;
+		console.log(rows);
+	};
+
 	return (
 		<>
-			{/* <button id="sort-desc" onClick={() => sortEmployees(0)}>
-				Sort Descending
-			</button>
-			<button id="sort-asc" onClick={() => sortEmployees(1)}>
-				Sort Ascending
-			</button> */}
 			<AddEmployee
 				newFirstname={newFirstname}
 				setNewFirstname={setNewFirstname}
@@ -162,7 +225,25 @@ const Employees = () => {
 			<article>
 				<h2>Employees List</h2>
 				{employees?.length ? (
-					<EmployeeContent employees={employees} handleDelete={handleDelete} />
+					<div style={{ height: 400, width: "100vw" }}>
+						<DataGrid
+							rows={employees.map((employee) => {
+								return {
+									id: employee._id,
+									firstName: employee.firstname,
+									lastName: employee.lastname,
+									salary: employee.salary,
+								};
+							})}
+							columns={columns}
+							initialState={{
+								pagination: {
+									paginationModel: { page: 0, pageSize: 5 },
+								},
+							}}
+							pageSizeOptions={[5, 10]}
+						/>
+					</div>
 				) : (
 					<p>No employees to display</p>
 				)}
